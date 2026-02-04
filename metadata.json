@@ -1,0 +1,7 @@
+{
+  "name": "LexiPedia - Portal Enciclopédico",
+  "description": "Un portal de conocimiento profesional inspirado en Wikipedia con funciones de investigación en tiempo real.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
