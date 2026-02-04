@@ -21,20 +21,24 @@ const CUSTOM_DEFINITIONS: Record<string, Definition> = {
 export const getHomeContent = async (): Promise<HomeContent> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const now = new Date();
-  const dateStr = now.toDateString();
+  const dateStr = now.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Genera contenido para la portada de una enciclopedia para el día ${dateStr}.`,
+      contents: `Genera contenido para la portada de una enciclopedia universal para el día ${dateStr}.`,
       config: {
-        systemInstruction: `Eres el editor jefe de LexiPedia. Genera contenido dinámico y veraz.
-        Debes proporcionar:
-        1. Un 'Artículo Destacado' (un tema de ciencia, historia o cultura relevante).
-        2. Un 'Recurso del Día' (una herramienta, concepto útil o curiosidad técnica).
-        3. 'Efemérides' (3 eventos importantes que ocurrieron un día como hoy).
+        systemInstruction: `Eres el editor jefe de LexiPedia, un portal de investigación universal.
+        Tu tarea es generar contenido cultural, científico e histórico veraz y fascinante.
+        Reglas de estilo:
+        - Tono enciclopédico, serio y profesional.
+        - No menciones el uso de inteligencia artificial.
+        - Evita frases de relleno.
         
-        Responde estrictamente en JSON.`,
+        Debes proporcionar en formato JSON:
+        1. 'featuredArticle': Un tema profundo de interés general.
+        2. 'resourceOfDay': Una herramienta conceptual o técnica útil.
+        3. 'onThisDay': 3 hitos históricos ocurridos un día como hoy.`,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -67,9 +71,9 @@ export const getHomeContent = async (): Promise<HomeContent> => {
     return JSON.parse(response.text) as HomeContent;
   } catch (e) {
     return {
-      featuredArticle: { title: "Exploración Espacial", summary: "La humanidad continúa su viaje hacia las estrellas con nuevas misiones de exploración interplanetaria." },
-      resourceOfDay: { title: "Pensamiento Crítico", description: "La habilidad de analizar hechos objetivamente para formar un juicio razonado." },
-      onThisDay: ["Se fundó LexiPedia v1.0", "Hoy es un gran día para aprender", "El conocimiento es libre y universal"]
+      featuredArticle: { title: "El Legado de la Cartografía", summary: "Desde los primeros mapas grabados en arcilla hasta los complejos sistemas modernos, la cartografía ha sido esencial para entender nuestra posición en el cosmos." },
+      resourceOfDay: { title: "Método Dialéctico", description: "Proceso de investigación que busca la verdad a través del contraste de ideas opuestas." },
+      onThisDay: ["Se inaugura la red de conocimiento LexiPedia", "Hoy se celebra la curiosidad intelectual", "El acceso a la información se considera un pilar de la libertad"]
     };
   }
 };
@@ -86,12 +90,15 @@ export const getDefinition = async (word: string): Promise<Definition> => {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview", 
-      contents: `Proporciona información esencial y veraz sobre: "${word}".`,
+      contents: `Proporciona una investigación exhaustiva y enciclopédica sobre: "${word}".`,
       config: {
         thinkingConfig: { thinkingBudget: 0 },
         tools: [{ googleSearch: {} }],
-        systemInstruction: `Eres LexiPedia 1.0. Tu misión es ser extremadamente rápido y preciso.
-        Instrucciones: Genera un artículo enciclopédico profesional. Formato JSON.`,
+        systemInstruction: `Eres el motor de investigación de LexiPedia. Genera artículos profesionales, estructurados y precisos.
+        - No menciones que eres una IA.
+        - No menciones actualizaciones automáticas.
+        - Proporciona etimología, fonética (si aplica) y ejemplos de uso.
+        - Formato obligatorio: JSON.`,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -124,6 +131,6 @@ export const getDefinition = async (word: string): Promise<Definition> => {
     const uniqueSources = Array.from(new Map(sources.map(s => [s.uri, s])).values());
     return { ...result, sources: uniqueSources };
   } catch (error) {
-    throw new Error("No pudimos obtener la información en este momento.");
+    throw new Error("El término consultado no se encuentra en los registros actuales o la investigación ha sido interrumpida.");
   }
 };
